@@ -51,13 +51,13 @@ jobs:
           
           
       - name: Run Architectural Tests
-        run: dotnet test ./tests/Clicheria.Tests.FitnessFunctions/Clicheria.Tests.FitnessFunctions.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
+        run: dotnet test ./tests/Livraria.Tests.FitnessFunctions/Livraria.Tests.FitnessFunctions.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
       
       - name: Run Unit Tests
-        run: dotnet test ./tests/Clicheria.Tests.Services/Clicheria.Tests.Services.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
+        run: dotnet test ./tests/Livraria.Tests.Services/Livraria.Tests.Services.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
           
       - name: Run Integration Tests
-        run: dotnet test ./tests/Clicheria.IntegrationTests/Clicheria.IntegrationTests.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
+        run: dotnet test ./tests/Livraria.IntegrationTests/Livraria.IntegrationTests.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
 
       - name: Create Test Report
         run: |
@@ -86,7 +86,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish the application
-        run: dotnet publish src/Clicheria.ApiHost -c Release --os linux -o ./publish
+        run: dotnet publish src/Livraria.ApiHost -c Release --os linux -o ./publish
 
       - name: Zip the application
         run: |
@@ -114,8 +114,8 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: Clicheria-Api
-          environment_name: clicheria-api-prod
+          application_name: Livraria-Api
+          environment_name: Livraria-api-prod
           region: us-east-1
           version_label: ${{ github.run_number }}
           deployment_package: my-dotnet-api.zip

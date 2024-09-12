@@ -7,12 +7,6 @@ src/**/bin/**/
 src/**/obj/**/
 
 
-# Sqlite Database
-src/Clicheria.ApiHost/Clicheria.db
-src/Clicheria.ApiHost/Clicheria.db-shm
-src/Clicheria.ApiHost/Clicheria.db-wal
-
-
 # User-specific files
 *.rsuser
 *.suo
