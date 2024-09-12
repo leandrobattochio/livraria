@@ -33,6 +33,20 @@ public class BookIntegrationTests(
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
     }
     
+    [Theory]
+    [InlineData("", "Editora Teste")]
+    [InlineData("Livro teste", "")]
+    public async Task ShouldNotCreateBook_WhenInvalidInput(string name, string publisher)
+    {
+        var cliente = CreateClient();
+
+        var command = new CreateBookCommand(name, publisher, DateTime.UtcNow);
+
+        var response = await cliente.PostAsync("api/book", command.ToPayload());
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+    
     
     [Fact]
     public async Task ShouldGetBook_WhenValidInput()

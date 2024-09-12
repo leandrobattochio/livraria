@@ -1,6 +1,6 @@
 using FluentValidation;
 using Livraria.Core.Application.Result;
-using Livraria.Core.Domain.Queries;
+using Livraria.Core.Domain;
 using Livraria.Core.Infrastructure;
 using Livraria.Domain.Models;
 using Livraria.Domain.Queries.Books;
@@ -12,16 +12,13 @@ namespace Livraria.Services.QueryHandlers.Books;
 public class GetBookQueryHandler(
     IValidator<GetBookQuery> validator,
     IUnitOfWork<LivrariaDbContext> unitOfWork)
-    : IQueryHandler<GetBookQuery, Result<BookReadModel>>
+    : QueryHandler<GetBookQuery, BookReadModel>(validator)
 {
-    public async Task<Result<BookReadModel>> Handle(GetBookQuery query, CancellationToken cancellationToken = default)
+    protected override async Task<Result<BookReadModel>> Run(GetBookQuery query,
+        CancellationToken cancellationToken = default)
     {
-        var validationResult = await validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-            return Result<BookReadModel>.BadRequest(validationResult);
-        
         var repository = unitOfWork.GetRepository<IBookRepository, Book>();
-        
+
         var book = await repository.GetBookReadModelAsync(query.BookId, cancellationToken);
 
         return book == null ? Result<BookReadModel>.NotFound() : Result<BookReadModel>.Ok(book);

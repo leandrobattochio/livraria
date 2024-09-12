@@ -2,6 +2,7 @@ using Livraria.Core.Domain.Commands;
 using Livraria.Core.Domain.Queries;
 using Livraria.Core.Infrastructure;
 using FluentValidation;
+using Livraria.Core.Domain;
 using Shouldly;
 
 namespace Livraria.Tests.FitnessFunctions;
@@ -95,7 +96,7 @@ public class ArchTests(ArchTestsFixture fixture) : IClassFixture<ArchTestsFixtur
         var implementedCommands = fixture
             .ServiceAssembly
             .That()
-            .ImplementInterface(typeof(ICommandHandler<,>))
+            .Inherit(typeof(CommandHandler<,>))
             .And()
             .ResideInNamespaceContaining("Livraria.Services.CommandHandlers")
             .GetTypes()
@@ -145,7 +146,7 @@ public class ArchTests(ArchTestsFixture fixture) : IClassFixture<ArchTestsFixtur
         var implementedQueries = fixture
             .ServiceAssembly
             .That()
-            .ImplementInterface(typeof(IQueryHandler<,>))
+            .Inherit(typeof(QueryHandler<,>))
             .And()
             .ResideInNamespaceContaining("Livraria.Services.QueryHandlers")
             .GetTypes()

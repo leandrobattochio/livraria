@@ -1,6 +1,6 @@
 using FluentValidation;
 using Livraria.Core.Application.Result;
-using Livraria.Core.Domain.Commands;
+using Livraria.Core.Domain;
 using Livraria.Core.Infrastructure;
 using Livraria.Domain.Commands.Books;
 using Livraria.Domain.Models;
@@ -14,15 +14,11 @@ public class CreateBookCommandHandler(
     IValidator<CreateBookCommand> validator,
     IUnitOfWork<LivrariaDbContext> unitOfWork,
     ILogger<CreateBookCommandHandler> logger)
-    : ICommandHandler<CreateBookCommand, Result<BookReadModel>>
+    : CommandHandler<CreateBookCommand, BookReadModel>(validator)
 {
-    public async Task<Result<BookReadModel>> Handle(CreateBookCommand command,
+    protected override async Task<Result<BookReadModel>> Run(CreateBookCommand command,
         CancellationToken cancellationToken = default)
     {
-        var validationResult = await validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-            return Result<BookReadModel>.BadRequest(validationResult);
-        
         var repository = unitOfWork.GetRepository<IBookRepository, Book>();
 
         var book = new Book(command.Name, command.Publisher, command.PublicationDate);
@@ -31,7 +27,7 @@ public class CreateBookCommandHandler(
         {
             await repository.AddAsync(book, cancellationToken);
             await unitOfWork.CommitAsync(cancellationToken);
-            
+
             return Result<BookReadModel>.Created(
                 new BookReadModel(book.Id, book.Name, book.Publisher, book.PublicationDate));
         }

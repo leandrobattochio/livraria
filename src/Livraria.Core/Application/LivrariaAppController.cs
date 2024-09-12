@@ -11,7 +11,7 @@ public abstract class LivrariaAppController : ControllerBase
     protected IActionResult Match<T>(T typedResult,
         Func<T, IActionResult> success,
         Func<IActionResult>? error = null)
-        where T : ICommandResult
+        where T : IRequestResult
     {
         if (typedResult.StatusCode is >= HttpStatusCode.OK and < HttpStatusCode.Ambiguous)
             return success(typedResult);

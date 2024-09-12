@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Livraria.Core.Application.Result;
 
-public class Result(HttpStatusCode statusCode) : ICommandResult
+public class Result(HttpStatusCode statusCode) : IRequestResult
 {
     public HttpStatusCode StatusCode { get; } = statusCode;
     public bool IsSuccess => Errors.Count == 0;

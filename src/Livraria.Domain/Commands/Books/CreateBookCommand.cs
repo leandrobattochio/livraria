@@ -11,5 +11,11 @@ public class CreateBookCommandValidator : AbstractValidator<CreateBookCommand>
     {
         RuleFor(c => c.Name)
             .NotEmpty();
+
+        RuleFor(c => c.Publisher)
+            .NotEmpty();
+
+        RuleFor(c => c.PublicationDate)
+            .NotEmpty();
     }
 }

@@ -2,7 +2,7 @@ using System.Net;
 
 namespace Livraria.Core.Application.Result;
 
-public interface ICommandResult
+public interface IRequestResult
 {
     bool IsSuccess { get; }
     List<ResultError> Errors { get; }

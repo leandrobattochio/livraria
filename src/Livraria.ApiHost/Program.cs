@@ -9,7 +9,6 @@ using Livraria.Core.Infrastructure;
 using Livraria.Infrastructure;
 using FluentValidation;
 using Livraria.Domain.Commands.Books;
-using Livraria.Domain.Queries.Books;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
