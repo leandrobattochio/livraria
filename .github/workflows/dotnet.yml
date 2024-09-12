@@ -1,0 +1,121 @@
+name: .NET Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      approve_deploy:
+        description: 'Aprove deploy to production?'
+        required: true
+        default: 'false'
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build the solution
+        run: dotnet build --configuration Release --no-restore
+        
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        
+      - name: Install test tools
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          export PATH="$PATH:/root/.dotnet/tools"
+          
+      - name: Install Dependencies
+        run: |
+          dotnet restore
+          
+          
+      - name: Run Architectural Tests
+        run: dotnet test ./tests/Clicheria.Tests.FitnessFunctions/Clicheria.Tests.FitnessFunctions.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
+      
+      - name: Run Unit Tests
+        run: dotnet test ./tests/Clicheria.Tests.Services/Clicheria.Tests.Services.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
+          
+      - name: Run Integration Tests
+        run: dotnet test ./tests/Clicheria.IntegrationTests/Clicheria.IntegrationTests.csproj  --no-restore --settings coverlet.runsettings --collect:"XPlat Code Coverage" -p:CoverletOutput=./coverage.xml -p:ExcludeByFile=**/*Migrations/*.cs -p:ExcludeByAttribute="ExcludeFromCodeCoverage"
+
+      - name: Create Test Report
+        run: |
+          reportgenerator -reports:./tests/**/TestResults/**/coverage.cobertura.xml -targetdir:./tests/Reports -reporttypes:"Html;JsonSummary"
+          totalCoverage=$(jq '.summary.branchcoverage // 0' ./tests/Reports/Summary.json | tr -d "\r\n" | xargs printf "%'.1f")
+          echo "TOTAL COVERAGE: $totalCoverage"
+          
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          retention-days: 7
+          path: ./tests/Reports
+        
+  publish-and-compress:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event.inputs.approve_deploy == 'true'  # Conditionally run based on approval
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish the application
+        run: dotnet publish src/Clicheria.ApiHost -c Release --os linux -o ./publish
+
+      - name: Zip the application
+        run: |
+          cd publish
+          zip -r ../my-dotnet-api.zip ./* -x '*.git*'
+
+      - name: Upload ZIP to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 7
+          name: my-dotnet-api
+          path: my-dotnet-api.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: publish-and-compress
+    steps:
+      - name: Download ZIP from Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: my-dotnet-api
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: Clicheria-Api
+          environment_name: clicheria-api-prod
+          region: us-east-1
+          version_label: ${{ github.run_number }}
+          deployment_package: my-dotnet-api.zip
