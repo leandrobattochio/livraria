@@ -1,8 +1,6 @@
 using System.Net;
 using Livraria.Core.Infrastructure;
 using Livraria.Domain.Commands.Books;
-using Livraria.Domain.Models;
-using Livraria.Domain.Repository.Books;
 using Livraria.Infrastructure;
 using Livraria.Infrastructure.Repository;
 using Livraria.Services.CommandHandlers.Books;
@@ -26,18 +24,17 @@ public class CreateBookCommandHandlerTests
         var options = new DbContextOptionsBuilder<LivrariaDbContext>()
             .UseInMemoryDatabase(databaseName: "ClicheriaTestDb")
             .Options;
-        var _dbContext = new LivrariaDbContext(options);
+        var dbContext = new LivrariaDbContext(options);
 
         // Configurando o Mock para IUnitOfWork
         var unitOfWork = new Mock<IUnitOfWork<LivrariaDbContext>>();
-        var _bookRepository = new BookRepository(unitOfWork.Object);
+        var bookRepository = new BookRepository(unitOfWork.Object);
 
-        unitOfWork.Setup(c => c.DbContext).Returns(_dbContext);
-        unitOfWork.Setup(c => c.GetRepository<IBookRepository, Book>()).Returns(_bookRepository);
+        unitOfWork.Setup(c => c.DbContext).Returns(dbContext);
 
         var loggerMock = new Mock<ILogger<CreateBookCommandHandler>>();
 
-        _handler = new CreateBookCommandHandler(validator, unitOfWork.Object, loggerMock.Object);
+        _handler = new CreateBookCommandHandler(validator, bookRepository, unitOfWork.Object, loggerMock.Object);
     }
 
     [Fact]

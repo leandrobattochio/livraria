@@ -1,4 +1,3 @@
-using FluentValidation;
 using Livraria.Core.Application.Result;
 using Livraria.Core.Domain;
 using Livraria.Core.Infrastructure;
@@ -11,7 +10,8 @@ using Microsoft.Extensions.Logging;
 namespace Livraria.Services.CommandHandlers.Books;
 
 public class CreateBookCommandHandler(
-    IValidator<CreateBookCommand> validator,
+    CreateBookCommandValidator validator,
+    IBookRepository bookRepository,
     IUnitOfWork<LivrariaDbContext> unitOfWork,
     ILogger<CreateBookCommandHandler> logger)
     : CommandHandler<CreateBookCommand, BookReadModel>(validator)
@@ -19,13 +19,11 @@ public class CreateBookCommandHandler(
     protected override async Task<Result<BookReadModel>> Run(CreateBookCommand command,
         CancellationToken cancellationToken = default)
     {
-        var repository = unitOfWork.GetRepository<IBookRepository, Book>();
-
         var book = new Book(command.Name, command.Publisher, command.PublicationDate);
 
         try
         {
-            await repository.AddAsync(book, cancellationToken);
+            await bookRepository.AddAsync(book, cancellationToken);
             await unitOfWork.CommitAsync(cancellationToken);
 
             return Result<BookReadModel>.Created(
