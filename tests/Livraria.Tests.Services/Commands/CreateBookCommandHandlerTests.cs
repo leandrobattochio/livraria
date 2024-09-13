@@ -23,13 +23,8 @@ public class CreateBookCommandHandlerTests
         
         var dbContext = new LivrariaDbContext(options);
         var unitOfWork = new Mock<IUnitOfWork<LivrariaDbContext>>();
-        var bookRepository = new BookRepository(unitOfWork.Object);
+        var bookRepository = new BookRepository(dbContext);
         var validator = new CreateBookCommandValidator();
-
-        unitOfWork
-            .Setup(c => c.DbContext)
-            .Returns(dbContext);
-
         var loggerMock = new Mock<ILogger<CreateBookCommandHandler>>();
 
         _handler = new CreateBookCommandHandler(validator, bookRepository, unitOfWork.Object, loggerMock.Object);
