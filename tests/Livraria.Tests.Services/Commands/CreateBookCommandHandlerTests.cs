@@ -17,20 +17,18 @@ public class CreateBookCommandHandlerTests
 
     public CreateBookCommandHandlerTests()
     {
-        // Configurando o Mock para UserManager
-
-        var validator = new CreateBookCommandValidator();
-
         var options = new DbContextOptionsBuilder<LivrariaDbContext>()
-            .UseInMemoryDatabase(databaseName: "ClicheriaTestDb")
+            .UseInMemoryDatabase(databaseName: "LivrariaInMemoryDb")
             .Options;
+        
         var dbContext = new LivrariaDbContext(options);
-
-        // Configurando o Mock para IUnitOfWork
         var unitOfWork = new Mock<IUnitOfWork<LivrariaDbContext>>();
         var bookRepository = new BookRepository(unitOfWork.Object);
+        var validator = new CreateBookCommandValidator();
 
-        unitOfWork.Setup(c => c.DbContext).Returns(dbContext);
+        unitOfWork
+            .Setup(c => c.DbContext)
+            .Returns(dbContext);
 
         var loggerMock = new Mock<ILogger<CreateBookCommandHandler>>();
 
