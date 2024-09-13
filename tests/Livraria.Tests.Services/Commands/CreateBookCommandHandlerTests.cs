@@ -5,6 +5,7 @@ using Livraria.Infrastructure;
 using Livraria.Infrastructure.Repository;
 using Livraria.Services.CommandHandlers.Books;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
@@ -19,15 +20,16 @@ public class CreateBookCommandHandlerTests
     {
         var options = new DbContextOptionsBuilder<LivrariaDbContext>()
             .UseInMemoryDatabase(databaseName: "LivrariaInMemoryDb")
+            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
         
         var dbContext = new LivrariaDbContext(options);
-        var unitOfWork = new Mock<IUnitOfWork<LivrariaDbContext>>();
+        var unitOfWork = new UnitOfWork<LivrariaDbContext>(dbContext);
         var bookRepository = new BookRepository(dbContext);
         var validator = new CreateBookCommandValidator();
         var loggerMock = new Mock<ILogger<CreateBookCommandHandler>>();
 
-        _handler = new CreateBookCommandHandler(validator, bookRepository, unitOfWork.Object, loggerMock.Object);
+        _handler = new CreateBookCommandHandler(validator, bookRepository, unitOfWork, loggerMock.Object);
     }
 
     [Fact]
